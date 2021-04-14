@@ -66,7 +66,7 @@ def _preprocess(folder, root, save_dir, tol=-0.05):
 
     #x = np.hstack([vertices, normals]).astype(np.float32)
     x = np.hstack((vertices, normals, corner)).astype(np.float32)
-    y = is_hole.astype(np.long)
+    y = is_hole.astype(np.compat.long)
 
     # mkdir
     save_folder = os.path.join(save_dir, folder)
@@ -90,7 +90,7 @@ def preprocess(root, save_dir, n_thread=4):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='HolePrediction')
-    parser.add_argument('--data', type=str, default='../data/sample',
+    parser.add_argument('--data', type=str, default='../data/bad',
                         help='path to raw stl data')
     parser.add_argument('--save', type=str, default='../data/std_data',
                         help='path to save')
