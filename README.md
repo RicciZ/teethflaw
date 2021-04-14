@@ -7,22 +7,32 @@ conda activate teethflaw
 sudo apt-get install openscad
 # mesh lib
 conda install -c conda-forge trimesh
-conda install rtree
+conda install -c conda-forge rtree
 # 3rd-party libs
 conda install -c anaconda tqdm
 # torch
-conda install pytorch torchvision cudatoolkit=10.2 -c pytorch # use cuda11 in our server, so change this accordingly
+conda install pytorch torchvision cudatoolkit=11.1 -c pytorch -c conda-forge
+# use cuda11 in our server, so change this accordingly
 # tensorboardX
 conda install -c conda-forge tensorboardx
-conda install tensorflow-gpu cudatoolkit=10.2 (10.2 on PC, 11.1 on server)
+conda install tensorflow-gpu cudatoolkit=11.1
 # win -> unix (on PC if needed)
 conda install -c msys2 m2-base
 # install if needed
 conda install -c conda-forge h5py
 conda install -c conda-forge plyfile
+conda install -c anaconda scipy
 ```
 
 ## Hole Prediction
+### GPU Use
+```bash
+# check GPU info
+nvidia-smi
+# Specify the GPU we want to use 
+# e.g. to use GPU no. 2 to run train.py
+CUDA_VISIBLE_DEVICES=2 python train.py
+```
 
 ### Preprocess
 ```bash
@@ -33,7 +43,7 @@ cd teethflaw/preprocess
 # all data are on the /rsch/teethhole on the server
 # preprocess.py line 25 as_dcm() (scipy 1.2.1) -> as_matrix() (scipy 1.6.2 new version)
 
-python preprocess.py --data ../data/sample --save ../data/std_data --id 11
+python preprocess.py --data ../data/bad --save ../data/std_data --id 11
 python split.py --data ../data/std_data --save ../data/std_split_data --id 11
 python dataset_stat.py --id 11
 ```
