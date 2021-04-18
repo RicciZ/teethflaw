@@ -54,7 +54,7 @@ class DGCNN(nn.Module):
         self.deconv4 = nn.Sequential(nn.Conv1d(128, 64, kernel_size=1, bias=False),
                                      nn.BatchNorm1d(64),
                                      nn.LeakyReLU(negative_slope=0.2))
-        self.output = nn.Conv1d(64, 1, kernel_size=1, bias=False)
+        self.output = nn.Conv1d(64, 2, kernel_size=1, bias=False)
 
     def forward(self, x):
         x = get_graph_feature(x, k=self.k)          # x(b,d=15,n,k) -> x(b,2*d=30,n,k)
@@ -78,7 +78,7 @@ class DGCNN(nn.Module):
         x = self.deconv5(x)                         # x(b,256,n) -> x(b,128,n)
         x = self.deconv4(x)                         # x(b,128,n) -> x(b,64,n)
 
-        return self.output(x)                       # x(b,64,n) -> x(b,15,n)
+        return self.output(x)                       # x(b,64,n) -> x(b,2,n)
 
 
 class SkipDGCNN(DGCNN):
