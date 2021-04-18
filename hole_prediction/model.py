@@ -33,7 +33,7 @@ class DGCNN(nn.Module):
         super(DGCNN, self).__init__()
         self.k = k
 
-        self.conv1 = nn.Sequential(nn.Conv2d(3 * 2, 64, kernel_size=1, bias=False),
+        self.conv1 = nn.Sequential(nn.Conv2d(15 * 2, 64, kernel_size=1, bias=False),
                                    nn.BatchNorm2d(64),
                                    nn.LeakyReLU(negative_slope=0.2))
         self.conv2 = nn.Sequential(nn.Conv2d(64 * 2, 64, kernel_size=1, bias=False),
@@ -54,31 +54,31 @@ class DGCNN(nn.Module):
         self.deconv4 = nn.Sequential(nn.Conv1d(128, 64, kernel_size=1, bias=False),
                                      nn.BatchNorm1d(64),
                                      nn.LeakyReLU(negative_slope=0.2))
-        self.output = nn.Conv1d(64, 3, kernel_size=1, bias=False)
+        self.output = nn.Conv1d(64, 1, kernel_size=1, bias=False)
 
     def forward(self, x):
-        x = get_graph_feature(x, k=self.k)          # (b,2*d,n,k)
-        x = self.conv1(x)
-        x1 = x.max(dim=-1, keepdim=False)[0]
+        x = get_graph_feature(x, k=self.k)          # x(b,d=15,n,k) -> x(b,2*d=30,n,k)
+        x = self.conv1(x)                           # x(b,30,n,k) -> x(b,64,n,k)
+        x1 = x.max(dim=-1, keepdim=False)[0]        # x(b,64,n,k) -> x1(b,64,n)
 
-        x = get_graph_feature(x1, k=self.k)
-        x = self.conv2(x)
-        x2 = x.max(dim=-1, keepdim=False)[0]
+        x = get_graph_feature(x1, k=self.k)         # x1(b,64,n) -> x(b,2*64,n,k)
+        x = self.conv2(x)                           # x(b,2*64,n,k) -> x(b,64,n,k)
+        x2 = x.max(dim=-1, keepdim=False)[0]        # x(b,64,n,k) -> x2(b,64,n)
 
-        x = get_graph_feature(x2, k=self.k)
-        x = self.conv3(x)
-        x3 = x.max(dim=-1, keepdim=False)[0]
+        x = get_graph_feature(x2, k=self.k)         # x2(b,64,n) -> x(b,2*64,n,k)
+        x = self.conv3(x)                           # x(b,2*64,n,k) -> x(b,128,n,k)
+        x3 = x.max(dim=-1, keepdim=False)[0]        # x(b,128,n,k) -> x3(b,128,n)
 
-        x = get_graph_feature(x3, k=self.k)
-        x = self.conv4(x)
-        x4 = x.max(dim=-1, keepdim=False)[0]
+        x = get_graph_feature(x3, k=self.k)         # x3(b,128,n) -> x(b,2*128,n,k)
+        x = self.conv4(x)                           # x(b,2*128,n,k) -> x(b,256,n,k)
+        x4 = x.max(dim=-1, keepdim=False)[0]        # x(b,256,n,k) -> x4(b,256,n)
 
-        x = torch.cat((x1, x2, x3, x4), dim=1)
-        x = self.conv5(x)
-        x = self.deconv5(x)
-        x = self.deconv4(x)
+        x = torch.cat((x1, x2, x3, x4), dim=1)      # x1,x2,x3,x4 -> x(b,64+64+128+256=512,n)
+        x = self.conv5(x)                           # x(b,512,n) -> x(b,256,n)
+        x = self.deconv5(x)                         # x(b,256,n) -> x(b,128,n)
+        x = self.deconv4(x)                         # x(b,128,n) -> x(b,64,n)
 
-        return self.output(x)
+        return self.output(x)                       # x(b,64,n) -> x(b,15,n)
 
 
 class SkipDGCNN(DGCNN):
