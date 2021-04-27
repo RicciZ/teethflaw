@@ -78,7 +78,7 @@ def init():
 
 def train(args):
     train_loader = DataLoader(HoleDataset('../data/std_split_data/train', args.tooth_ids), num_workers=0,batch_size=args.batch_size, shuffle=True, drop_last=True)
-    test_loader = DataLoader(HoleDataset('../data/std_split_data/valid', args.tooth_ids, train=False), num_workers=0,batch_size=2, shuffle=False, drop_last=False)
+    test_loader = DataLoader(HoleDataset('../data/std_split_data/valid', args.tooth_ids, train=False), num_workers=0,batch_size=4, shuffle=False, drop_last=False)
     # Try to load models
     device = torch.device("cuda")
     model = get_model(args.model, args).to(device)
@@ -200,7 +200,7 @@ def train(args):
 if __name__ == "__main__":
     # Training settings
     parser = argparse.ArgumentParser(description='HolePrediction')
-    parser.add_argument('--exp_name', type=str, default='exp',
+    parser.add_argument('--exp_name', type=str, default=None,
                         help='Name of the experiment')
     parser.add_argument('--model', type=str, default='dgcnn', choices=['dgcnn'],
                         help='Model to use, [dgcnn]')
@@ -210,9 +210,9 @@ if __name__ == "__main__":
                         choices=['ce', 'weighted_ce', 'log_weighted_ce', 'weighted_ce_var_i', 'weighted_ce_var_ii',
                                  'weighted_ce_var_iii', 'focal_loss', 'dice_loss', 'weight_dice_loss', 'wce_dice_loss'],
                         help='Loss to use, [ce, weighted_ce, log_weighted_ce, weighted_ce_var_i, weighted_ce_var_ii, weighted_ce_var_iii, focal_loss, dice_loss, gen_dice_loss, wce_gdl_loss]')
-    parser.add_argument('--batch_size', type=int, default=2,
+    parser.add_argument('--batch_size', type=int, default=4,
                         help='Size of batch)')
-    parser.add_argument('--epochs', type=int, default=1,
+    parser.add_argument('--epochs', type=int, default=50,
                         help='number of episode to train ')
     parser.add_argument('--p', type=float, default=0.4,
                         help='dropout ratio ')
@@ -224,7 +224,7 @@ if __name__ == "__main__":
                         help='SGD momentum (default: 0.9)')
     parser.add_argument('--seed', type=int, default=1,
                         help='random seed (default: 1)')
-    parser.add_argument('--tooth_ids', type=str, default='11', help='tooth ids')
+    parser.add_argument('--tooth_ids', type=str, default=None, help='tooth ids')
     parser.add_argument('--all', type=bool, default=False,
                         help='Use all teeth or not')
     parser.add_argument('--stat', type=str, default=None, help='data stat')
@@ -234,11 +234,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.all:
-        args.exp_name = '_'.join(['{}[{}]'.format(k, v) for k, v in args.__dict__.items()])
+        args.exp_name = '_'.join(['{}[{}]'.format(k, v) for k, v in args.__dict__.items() if v != None])
         args.tooth_ids = [11,12,13,14,15,16,17,21,22,23,24,25,26,27,28,31,32,33,34,35,36,37,38,41,42,43,44,45,46,47,48]
     else:
         args.tooth_ids = [int(i) for i in args.tooth_ids.split(',')]
-        # args.exp_name = '_'.join(['{}[{}]'.format(k, v) for k, v in args.__dict__.items()])
+        args.exp_name = '_'.join(['{}[{}]'.format(k, v) for k, v in args.__dict__.items() if v != None])
     print(args)
 
     init()
